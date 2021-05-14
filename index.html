@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html xmlns:og="http://ogp.me/ns#">
+<head lang="fr">
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>D. Baymax</title>
+    <meta name="description" content="basic_description.">
+    <!-- OG -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="BayMax > Akinator">
+    <meta property="og:description" content="Baymax peut analyser ce dont vous avez le plus envie !">
+    <meta property="og:image" content="basic_image.">
+    <meta property="og:site_name" content="BayMaxKinator">
+    <meta property="og:locale" content="fr-FR">
+    <!-- TWITTER -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:creator" content="@basic_user">
+    <meta name="twitter:title" content="BayMax > Akinator">
+    <meta name="twitter:description" content="Baymax peut analyser ce dont vous avez le plus envie !">
+    <meta name="twitter:image" content="basic_image.">
+    <!-- Other -->
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/computer.css">
+    <link rel="stylesheet" href="css/scomputer.css">
+    <link rel="stylesheet" href="css/tablet.css">
+    <link rel="stylesheet" href="css/phone.css">
+    <script type="text/javascript" src="js/main.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.1/css/all.min.css" />
+    
+
+</head>
+<body>
+
+    <div>
+        <div class="speech-bubble">
+          <div id="contain__text__before" class="intro">Bonjour. Je suis Baymax. Votre assistant de santé personnel. Je peux deviner ce que vous souhaitez le plus. </div>
+          <button id="button__launch" onclick="loadGraph()">Devine !</button>
+          <div id="loading__dot" class="dot-pulse"></div>
+        </div>
+        <div class="container">
+          <div class="right"></div>
+          <div class="left"></div>
+          <div class="face">
+            <div class="eyes"></div>
+          </div>
+          <div class="body">
+            <div class="chip"></div>
+          </div>
+          <div class="hand-right">
+            <div class="finger"></div>
+            <div class="finger"></div>
+            <div class="finger"></div>
+            <div class="finger"></div>
+            <div class="left-curve"></div>
+            <div class="right-curve"></div>
+            <div class="thumb"></div>
+          </div>
+          <div class="hand-left"></div>
+        </div>
+    </div>
+
+    <div id="content__graph" class="wrapper">
+      <canvas id='c'></canvas>
+    </div>
+
+    <script>
+        var label = document.querySelector(".label");
+        var c = document.getElementById("c");
+        var ctx = c.getContext("2d");
+        var cw = c.width = window.innerWidth / 1.2;
+        var ch = c.height = window.innerHeight / 1.05;
+        var cx = cw / 2, cy = ch / 2;
+        var rad = Math.PI / 180;
+        var frames = 0;
+
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = "#999";
+        ctx.fillStyle = "#ccc";
+        ctx.font = "14px monospace";
+
+        var grd = ctx.createLinearGradient(0, 0, 0, cy);
+
+        var oData = {
+          "oct.": 17,
+          "nov.": 14,
+          "dec.": 36,
+          "jan.": 21,
+          "fev.": 45,
+          "mars.": 66,
+          "avril.": 87,
+          "mai.": 96
+        };
+
+        var valuesRy = [];
+        var propsRy = [];
+        for (var prop in oData) {
+
+          valuesRy.push(oData[prop]);
+          propsRy.push(prop);
+        }
+
+
+        var vData = 5;
+        var hData = valuesRy.length;
+        var offset = 50.5; //offset chart axis
+        var chartHeight = ch - 2 * offset;
+        var chartWidth = cw - 2 * offset;
+        var t = 1 / 10; // curvature : 0 = no curvature 
+        var speed = 2; // for the animation
+
+        var A = {
+          x: offset,
+          y: offset
+        }
+        var B = {
+          x: offset,
+          y: offset + chartHeight
+        }
+        var C = {
+          x: offset + chartWidth,
+          y: offset + chartHeight
+        }
+
+        var aStep = (chartHeight - 50) / (vData);
+
+        var Max = 100;
+        var Min = 0;
+        var aStepValue = (Max - Min) / (vData);
+        var verticalUnit = aStep / aStepValue;
+
+        var a = [];
+        for (var i = 0; i <= vData; i++) {
+
+          if (i == 0) {
+            a[i] = {
+              x: A.x,
+              y: A.y + 25,
+              val: Max
+            }
+          } else {
+            a[i] = {}
+            a[i].x = a[i - 1].x;
+            a[i].y = a[i - 1].y + aStep;
+            a[i].val = a[i - 1].val - aStepValue;
+          }
+        }
+
+        var b = [];
+        var bStep = chartWidth / (hData + 1);
+
+        for (var i = 0; i < hData; i++) {
+          if (i == 0) {
+            b[i] = {
+              x: B.x + bStep,
+              y: B.y,
+              val: propsRy[0]
+            };
+          } else {
+            b[i] = {}
+            b[i].x = b[i - 1].x + bStep;
+            b[i].y = b[i - 1].y;
+            b[i].val = propsRy[i]
+          }
+        }
+
+    
+        // DATA
+        var oDots = [];
+        var oFlat = [];
+        var i = 0;
+
+        for (var prop in oData) {
+          oDots[i] = {}
+          oFlat[i] = {}
+
+          oDots[i].x = b[i].x;
+          oFlat[i].x = b[i].x;
+
+          oDots[i].y = b[i].y - oData[prop] * verticalUnit - 25;
+          oFlat[i].y = b[i].y - 25;
+
+          oDots[i].val = oData[b[i].val];
+          
+          i++
+        }
+
+
+    </script>
+
+<!--
+    <canvas id="canvas"></canvas>
+    <script>
+        (function () {
+          var requestAnimationFrame =
+            window.requestAnimationFrame ||
+            window.mozRequestAnimationFrame ||
+            window.webkitRequestAnimationFrame ||
+            window.msRequestAnimationFrame ||
+            function (callback) {
+              window.setTimeout(callback, 1000 / 60);
+            };
+          window.requestAnimationFrame = requestAnimationFrame;
+        })();
+
+        var flakes = [],
+          canvas = document.getElementById("canvas"),
+          ctx = canvas.getContext("2d"),
+          flakeCount = 200,
+          mX = -100,
+          mY = -100;
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+
+        canvas.addEventListener("mousemove", function (e) {
+          (mX = e.clientX), (mY = e.clientY);
+        });
+
+        window.addEventListener("resize", function () {
+          canvas.width = window.innerWidth;
+          canvas.height = window.innerHeight;
+        });
+
+        init();
+
+    </script>-->
+
+</body>
+</html>
+
+
+

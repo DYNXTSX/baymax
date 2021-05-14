@@ -1,0 +1,14 @@
+@media screen and (max-width: 767px) {
+	.intro{
+		font-size: 18px;
+	}
+
+	#content__graph{
+		display: none!important;
+		visibility: 0;
+	}
+
+	.speech-bubble{
+		width: 90%!important;
+	}
+}
